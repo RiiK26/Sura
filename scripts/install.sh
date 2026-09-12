@@ -2,7 +2,7 @@
 set -e
 echo -e "\033[33mInstalling Sura...\033[0m"
 
-REPO="ItsMe-RiiK/Sura"
+REPO="RiiK26/Sura"
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" 2>/dev/null && pwd || echo "" )"
 
 # Create standard user directories if they don't exist

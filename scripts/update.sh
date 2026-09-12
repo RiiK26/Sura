@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-REPO="ItsMe-RiiK/Sura"
+REPO="RiiK26/Sura"
 echo "Checking for updates from https://github.com/$REPO..."
 
 # Fetch latest release info using GitHub API
