@@ -10,9 +10,6 @@ execute_process(COMMAND git describe --tags --abbrev=0
                 OUTPUT_VARIABLE GIT_VERSION
                 OUTPUT_STRIP_TRAILING_WHITESPACE
                 ERROR_QUIET)
-if (NOT GIT_VERSION)
-    set(GIT_VERSION "v2.1.0")
-endif()
 
 add_compile_definitions(SURA_VERSION="${GIT_VERSION}" NDEBUG)
 
