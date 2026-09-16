@@ -12,7 +12,8 @@ class CropBoxItem: public QGraphicsRectItem
 public:
   CropBoxItem(const QRectF& rect, QGraphicsItem* parent = nullptr);
 
-  enum ResizeHandle {
+  enum ResizeHandle
+  {
     None,
     TopLeft,
     Top,
@@ -33,7 +34,7 @@ protected:
 
 private:
   ResizeHandle getHandleAt(const QPointF& pos);
-  void         updateCursor();
+  void updateCursor();
 
   ResizeHandle currentHandle;
   QPointF      lastMousePos;

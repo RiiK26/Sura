@@ -5,8 +5,8 @@
 #include <QProcess>
 #include <iostream>
 
-namespace Cli {
-
+namespace Cli
+{
   bool handleArguments(const QStringList& args)
   {
     if (args.contains("--help") || args.contains("-h")) {
@@ -27,8 +27,7 @@ namespace Cli {
         QProcess::startDetached(updaterPath, QStringList());
       }
       else {
-        std::cerr << "Error: Updater script not found at " << updaterPath.toStdString()
-                  << std::endl;
+        std::cerr << "Error: Updater script not found at " << updaterPath.toStdString() << std::endl;
       }
       return true;
     }
@@ -40,8 +39,7 @@ namespace Cli {
         QProcess::startDetached(uninstallerPath, QStringList());
       }
       else {
-        std::cerr << "Error: Uninstaller script not found at " << uninstallerPath.toStdString()
-                  << std::endl;
+        std::cerr << "Error: Uninstaller script not found at " << uninstallerPath.toStdString() << std::endl;
       }
       return true;
     }

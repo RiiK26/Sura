@@ -7,8 +7,8 @@
 #include <QStyleFactory>
 #include <QStyleHints>
 
-namespace Theme {
-
+namespace Theme
+{
   bool isSystemDarkMode()
   {
     // 1. Standard Qt method (works if platform theme plugin is available)
@@ -71,10 +71,9 @@ namespace Theme {
     apply(app);
 
     // Auto-update theme if user changes system setting while app is running
-    QObject::connect(
-      QGuiApplication::styleHints(), &QStyleHints::colorSchemeChanged, &app,
-      [&app](Qt::ColorScheme) { apply(app); }
-    );
+    QObject::connect(QGuiApplication::styleHints(), &QStyleHints::colorSchemeChanged, &app, [&app](Qt::ColorScheme) {
+      apply(app);
+    });
   }
 
 }  // namespace Theme

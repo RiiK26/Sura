@@ -2,7 +2,8 @@
 
 #include <QStringList>
 
-namespace Cli {
+namespace Cli
+{
   /**
      * @brief Process command line arguments.
      * @param args The application arguments.

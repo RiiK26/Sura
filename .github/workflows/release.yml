@@ -11,7 +11,7 @@ permissions:
 jobs:
   build:
     uses: ./.github/workflows/build.yml
-    
+
   release:
     needs: build
     runs-on: ubuntu-latest
@@ -20,12 +20,12 @@ jobs:
         uses: actions/checkout@v7
         with:
           fetch-depth: 0
-          
+
       - name: Download Artifact
         uses: actions/download-artifact@v8
         with:
           name: Sura-AppImage
-          
+
       - name: Extract Major Version
         id: get_major
         run: |
@@ -33,23 +33,23 @@ jobs:
           VERSION_NUM="${TAG#v}"
           MAJOR="${VERSION_NUM%%.*}"
           echo "major=$MAJOR" >> $GITHUB_OUTPUT
-          
+
       - name: Create Release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TAG="${GITHUB_REF#refs/tags/}"
-          
+
           # Find the exact previous semantic tag
           PREV_TAG=$(git tag -l 'v*' | sort -rV | grep -A 1 "^$TAG$" | tail -n 1)
-          
+
           # If this is the very first tag, don't supply a start tag
           if [ "$PREV_TAG" = "$TAG" ] || [ -z "$PREV_TAG" ]; then
             NOTES_FLAG=""
           else
             NOTES_FLAG="--notes-start-tag $PREV_TAG"
           fi
-          
+
           gh release create "$TAG" Sura-*.AppImage \
             --title "Sura v${{ steps.get_major.outputs.major }}" \
             --generate-notes $NOTES_FLAG
@@ -60,18 +60,18 @@ jobs:
         run: |
           TAGS=$(git tag -l 'v*' | sort -rV)
           declare -A MAJOR_COUNTS
-          
+
           for TAG in $TAGS; do
             VERSION_NUM="${TAG#v}"
             MAJOR="${VERSION_NUM%%.*}"
-            
+
             if [ -z "${MAJOR_COUNTS[$MAJOR]}" ]; then
               MAJOR_COUNTS[$MAJOR]=0
             fi
-            
+
             COUNT=${MAJOR_COUNTS[$MAJOR]}
             MAJOR_COUNTS[$MAJOR]=$((COUNT + 1))
-            
+
             if [ ${MAJOR_COUNTS[$MAJOR]} -gt 2 ]; then
               echo "Deleting old release: $TAG (Major Version $MAJOR already has 2 newest releases)"
               gh release delete "$TAG" -y || true

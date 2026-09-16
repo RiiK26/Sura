@@ -19,9 +19,9 @@ CropBoxItem::CropBoxItem(const QRectF& rect, QGraphicsItem* parent) :
 
 CropBoxItem::ResizeHandle CropBoxItem::getHandleAt(const QPointF& pos)
 {
-  QRectF r = rect();
-  qreal  x = pos.x();
-  qreal  y = pos.y();
+  QRectF r    = rect();
+  qreal  x    = pos.x();
+  qreal  y    = pos.y();
 
   bool left   = x >= r.left() && x <= r.left() + handleSize;
   bool right  = x <= r.right() && x >= r.right() - handleSize;

@@ -26,7 +26,7 @@ else
     curl -sL --fail "https://raw.githubusercontent.com/$REPO/main/scripts/update.sh" -o ~/.local/bin/sura-update.tmp
     curl -sL --fail "https://raw.githubusercontent.com/$REPO/main/scripts/uninstall.sh" -o ~/.local/bin/sura-uninstall.tmp
     curl -sL --fail "https://raw.githubusercontent.com/$REPO/main/resources/images/icon.png" -o ~/.local/share/icons/hicolor/256x256/apps/sura.png.tmp
-    
+
     # Atomic moves ensure we don't leave corrupted files if download fails
     mv ~/.local/bin/sura.tmp ~/.local/bin/sura
     mv ~/.local/bin/sura-update.tmp ~/.local/bin/sura-update
