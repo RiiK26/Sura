@@ -66,6 +66,7 @@ jobs:
           rm -rf AppDir/usr/plugins/tls
           rm -rf AppDir/usr/plugins/virtualkeyboard
           rm -rf AppDir/usr/plugins/generic
+          rm -rf AppDir/usr/share/doc AppDir/usr/share/man AppDir/usr/share/gtk-doc AppDir/usr/include
           rm -f AppDir/usr/plugins/imageformats/libqgif.so
           rm -f AppDir/usr/plugins/imageformats/libqico.so
           rm -f AppDir/usr/plugins/imageformats/libqpdf.so
@@ -128,7 +129,7 @@ jobs:
           fi
 
           gh release create "$TAG" Sura-*.AppImage \
-            --title "Sura v${{ steps.get_major.outputs.major }}" \
+            --title "Sura $TAG" \
             --generate-notes $NOTES_FLAG
 
       - name: Keep 2 most recent releases per Major Version
