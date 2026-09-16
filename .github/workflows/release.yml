@@ -117,20 +117,22 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           TAG="${GITHUB_REF#refs/tags/}"
+          MAJOR_VERSION="${{ steps.get_major.outputs.major }}"
+          MAJOR_TAG="v$MAJOR_VERSION"
 
-          # Find the exact previous semantic tag
-          PREV_TAG=$(git tag -l 'v*' | sort -rV | grep -A 1 "^$TAG$" | tail -n 1)
+          # Force update the major tag to point to this exact commit
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag -f "$MAJOR_TAG"
+          git push origin -f "$MAJOR_TAG"
 
-          # If this is the very first tag, don't supply a start tag
-          if [ "$PREV_TAG" = "$TAG" ] || [ -z "$PREV_TAG" ]; then
-            NOTES_FLAG=""
-          else
-            NOTES_FLAG="--notes-start-tag $PREV_TAG"
-          fi
+          # Delete old major release to refresh it
+          gh release delete "$MAJOR_TAG" -y || true
 
-          gh release create "$TAG" Sura-*.AppImage \
-            --title "Sura $TAG" \
-            --generate-notes $NOTES_FLAG
+          # Create the rolling major release
+          gh release create "$MAJOR_TAG" Sura-*.AppImage \
+            --title "SuraV$MAJOR_VERSION" \
+            --notes "Latest rolling release containing the updates from $TAG"
 
       - name: Keep 2 most recent releases per Major Version
         env:
