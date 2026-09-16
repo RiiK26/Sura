@@ -18,7 +18,8 @@ Sura::Sura(QWidget* parent) :
     currentIndex(-1),
     pixmapItem(nullptr),
     cropBox(nullptr),
-    isUnsaved(false),
+    isCropped(false),
+    currentRotation(0),
     showRawExif(false)
 {
   // Setup Graphics View & Scene
@@ -182,7 +183,8 @@ bool Sura::saveImage()
     if (currentImage.save(fileName)) {
       currentFile = fileName;
       setWindowTitle(QFileInfo(fileName).fileName() + QString(" - Sura %1").arg(SURA_VERSION));
-      isUnsaved = false;
+      isCropped       = false;
+      currentRotation = 0;
       updateDirectoryList(currentFile);
       return true;
     }
@@ -231,6 +233,9 @@ void Sura::loadImage(const QString& fileName)
     view->fitInView(scene->sceneRect(), Qt::KeepAspectRatio);
     currentFile = fileName;
     setWindowTitle(QFileInfo(fileName).fileName() + QString(" - Sura %1").arg(SURA_VERSION));
+
+    isCropped       = false;
+    currentRotation = 0;
 
     loadExif(fileName);
   }
@@ -293,17 +298,19 @@ void Sura::applyCrop()
     view->fitInView(scene->sceneRect(), Qt::KeepAspectRatio);
 
     cancelCropMode();
-    isUnsaved = true;
+    isCropped = true;
     exifTextEdit->setText("Cropped image (Unsaved).");
   }
 }
 
+bool Sura::hasUnsavedChanges() const { return isCropped || (currentRotation != 0); }
+
 bool Sura::maybeSave()
 {
-  if (!isUnsaved)
+  if (!hasUnsavedChanges())
     return true;
   QMessageBox::StandardButton ret = QMessageBox::warning(
-    this, "Unsaved Changes", "The image has been cropped but not saved.\nDo you want to save your changes?",
+    this, "Unsaved Changes", "The image has unsaved changes.\nDo you want to save your changes?",
     QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel
   );
   if (ret == QMessageBox::Save) {
@@ -387,8 +394,14 @@ void Sura::rotateLeft()
   view->fitInView(scene->sceneRect(), Qt::KeepAspectRatio);
 
   cancelCropMode();
-  isUnsaved = true;
-  exifTextEdit->setText("Rotated image (Unsaved).");
+  currentRotation = (currentRotation - 90) % 360;
+  if (currentRotation < 0)
+    currentRotation += 360;
+
+  if (hasUnsavedChanges())
+    exifTextEdit->setText("Rotated image (Unsaved).");
+  else
+    exifTextEdit->setText("Image returned to original state.");
 }
 
 void Sura::rotateRight()
@@ -405,8 +418,12 @@ void Sura::rotateRight()
   view->fitInView(scene->sceneRect(), Qt::KeepAspectRatio);
 
   cancelCropMode();
-  isUnsaved = true;
-  exifTextEdit->setText("Rotated image (Unsaved).");
+  currentRotation = (currentRotation + 90) % 360;
+
+  if (hasUnsavedChanges())
+    exifTextEdit->setText("Rotated image (Unsaved).");
+  else
+    exifTextEdit->setText("Image returned to original state.");
 }
 
 void Sura::toggleExif() { exifDock->setVisible(!exifDock->isVisible()); }

@@ -13,12 +13,12 @@ int main(int argc, char* argv[])
 {
   QApplication app(argc, argv);
   app.setApplicationName("sura");
+  app.setApplicationVersion(SURA_VERSION);
   app.setDesktopFileName("sura");
   app.setWindowIcon(QIcon(":/images/icon.png"));
 
-  QStringList args = app.arguments();
-
-  if (Cli::handleArguments(args)) {
+  QString fileToLoad;
+  if (!Cli::handleArguments(app, fileToLoad)) {
     return 0;
   }
 
@@ -30,8 +30,8 @@ int main(int argc, char* argv[])
   viewer.setWindowTitle(QString("Sura %1").arg(SURA_VERSION));
   viewer.show();
 
-  if (app.arguments().size() > 1) {
-    viewer.loadInitialFile(app.arguments().at(1));
+  if (!fileToLoad.isEmpty()) {
+    viewer.loadInitialFile(fileToLoad);
   }
 
   return app.exec();

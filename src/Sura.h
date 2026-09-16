@@ -64,7 +64,9 @@ private:
   QAction*     applyCropAct;
   QAction*     saveAct;
 
-  bool isUnsaved;
+  bool isCropped;
+  int  currentRotation;
+  bool hasUnsavedChanges() const;
   bool showRawExif;
   bool maybeSave();
 };
