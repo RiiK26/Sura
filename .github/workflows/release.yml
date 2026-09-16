@@ -9,11 +9,81 @@ permissions:
   contents: write
 
 jobs:
-  build:
-    uses: ./.github/workflows/build.yml
+  build-appimage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake build-essential libexiv2-dev libgl1-mesa-dev file libfuse2 libxcb-cursor0
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.5.0'
+
+      - name: Build Sura
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=MinSizeRel
+          cmake --build build
+          strip build/Sura
+
+      - name: Build AppImage
+        run: |
+          wget -c -nv "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage"
+          wget -c -nv "https://github.com/linuxdeploy/linuxdeploy-plugin-qt/releases/download/continuous/linuxdeploy-plugin-qt-x86_64.AppImage"
+          chmod a+x linuxdeploy*.AppImage
+
+          mkdir -p AppDir/usr/bin AppDir/usr/share/applications AppDir/usr/share/icons/hicolor/256x256/apps
+          cp build/Sura AppDir/usr/bin/sura
+          cp resources/images/icon.png AppDir/usr/share/icons/hicolor/256x256/apps/sura.png
+
+          cp resources/sura.desktop AppDir/usr/share/applications/sura.desktop
+
+          export VERSION=$(git describe --tags --always || echo "latest")
+          export EXTRA_QT_PLUGINS=wayland,svg
+
+          # Set up AppDir with basic desktop and icon
+          ./linuxdeploy-x86_64.AppImage \
+            --appdir AppDir \
+            --desktop-file AppDir/usr/share/applications/sura.desktop \
+            --icon-file AppDir/usr/share/icons/hicolor/256x256/apps/sura.png
+
+          # Run Qt plugin to deploy libraries
+          ./linuxdeploy-plugin-qt-x86_64.AppImage --appdir AppDir
+
+          # Aggressive AppDir Cleanup
+          echo "Cleaning up AppDir to reduce size..."
+          rm -rf AppDir/usr/translations
+          rm -rf AppDir/usr/plugins/bearer
+          rm -rf AppDir/usr/plugins/networkinformation
+          rm -rf AppDir/usr/plugins/sqldrivers
+          rm -rf AppDir/usr/plugins/tls
+          rm -rf AppDir/usr/plugins/virtualkeyboard
+          rm -rf AppDir/usr/plugins/generic
+
+          # Aggressive stripping of all shared libraries
+          echo "Stripping shared libraries..."
+          find AppDir -type f \( -name "*.so*" -o -name "sura" \) -exec strip --strip-unneeded {} \; 2>/dev/null || true
+
+          # Create final AppImage
+          ./linuxdeploy-x86_64.AppImage \
+            --appdir AppDir \
+            --output appimage
+
+      - name: Upload AppImage Artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: Sura-AppImage
+          path: Sura-*.AppImage
 
   release:
-    needs: build
+    needs: build-appimage
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
