@@ -39,6 +39,8 @@ private slots:
   void cancelCropMode();
   void zoomIn();
   void zoomOut();
+  void rotateLeft();
+  void rotateRight();
   void toggleExif();
 
 private:

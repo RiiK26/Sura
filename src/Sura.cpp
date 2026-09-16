@@ -104,6 +104,14 @@ Sura::Sura(QWidget* parent) :
   zoomOutAct->setShortcut(QKeySequence::ZoomOut);
   connect(zoomOutAct, &QAction::triggered, this, &Sura::zoomOut);
 
+  QAction* rotateLeftAct = new QAction(QIcon::fromTheme("object-rotate-left"), "Rotate &Left", this);
+  rotateLeftAct->setShortcut(tr("Ctrl+L"));
+  connect(rotateLeftAct, &QAction::triggered, this, &Sura::rotateLeft);
+
+  QAction* rotateRightAct = new QAction(QIcon::fromTheme("object-rotate-right"), "Rotate &Right", this);
+  rotateRightAct->setShortcut(tr("Ctrl+R"));
+  connect(rotateRightAct, &QAction::triggered, this, &Sura::rotateRight);
+
   // Setup Menus
   QMenu* fileMenu = menuBar()->addMenu("&File");
   fileMenu->addAction(openAct);
@@ -118,6 +126,9 @@ Sura::Sura(QWidget* parent) :
   viewMenu->addAction(zoomInAct);
   viewMenu->addAction(zoomOutAct);
   viewMenu->addSeparator();
+  viewMenu->addAction(rotateLeftAct);
+  viewMenu->addAction(rotateRightAct);
+  viewMenu->addSeparator();
   viewMenu->addAction(cropAct);
   viewMenu->addAction(applyCropAct);
   viewMenu->addAction(exifAct);
@@ -130,6 +141,8 @@ Sura::Sura(QWidget* parent) :
   toolBar->addAction(nextAct);
   toolBar->addAction(zoomInAct);
   toolBar->addAction(zoomOutAct);
+  toolBar->addAction(rotateLeftAct);
+  toolBar->addAction(rotateRightAct);
   toolBar->addAction(cropAct);
   toolBar->addAction(applyCropAct);
   toolBar->addAction(exifAct);
@@ -139,9 +152,8 @@ void Sura::openFile()
 {
   if (!maybeSave())
     return;
-  QString fileName = QFileDialog::getOpenFileName(
-    this, "Open Image", QDir::homePath(), "Images (*.png *.xpm *.jpg *.jpeg *.bmp *.svg)"
-  );
+  QString fileName =
+    QFileDialog::getOpenFileName(this, "Open Image", QDir::homePath(), "Images (*.png *.xpm *.jpg *.jpeg *.bmp *.svg)");
   if (!fileName.isEmpty()) {
     loadImage(fileName);
     updateDirectoryList(fileName);
@@ -164,9 +176,8 @@ bool Sura::saveImage()
 {
   if (currentImage.isNull())
     return true;
-  QString fileName = QFileDialog::getSaveFileName(
-    this, "Save Image As", currentFile, "Images (*.png *.xpm *.jpg *.jpeg *.bmp *.svg)"
-  );
+  QString fileName =
+    QFileDialog::getSaveFileName(this, "Save Image As", currentFile, "Images (*.png *.xpm *.jpg *.jpeg *.bmp *.svg)");
   if (!fileName.isEmpty()) {
     if (currentImage.save(fileName)) {
       currentFile = fileName;
@@ -261,9 +272,7 @@ void Sura::enterCropMode()
 
   // Create crop box in the center, 50% of the image size
   QRectF imgRect = pixmapItem->boundingRect();
-  QRectF cropRect(
-    imgRect.width() * 0.25, imgRect.height() * 0.25, imgRect.width() * 0.5, imgRect.height() * 0.5
-  );
+  QRectF cropRect(imgRect.width() * 0.25, imgRect.height() * 0.25, imgRect.width() * 0.5, imgRect.height() * 0.5);
 
   cropBox = new CropBoxItem(cropRect, pixmapItem);
   applyCropAct->setEnabled(true);
@@ -294,8 +303,7 @@ bool Sura::maybeSave()
   if (!isUnsaved)
     return true;
   QMessageBox::StandardButton ret = QMessageBox::warning(
-    this, "Unsaved Changes",
-    "The image has been cropped but not saved.\nDo you want to save your changes?",
+    this, "Unsaved Changes", "The image has been cropped but not saved.\nDo you want to save your changes?",
     QMessageBox::Save | QMessageBox::Discard | QMessageBox::Cancel
   );
   if (ret == QMessageBox::Save) {
@@ -365,6 +373,42 @@ void Sura::zoomOut()
   }
 }
 
+void Sura::rotateLeft()
+{
+  if (!pixmapItem || currentImage.isNull())
+    return;
+
+  QTransform transform;
+  transform.rotate(-90);
+  currentImage = currentImage.transformed(transform, Qt::SmoothTransformation);
+
+  pixmapItem->setPixmap(QPixmap::fromImage(currentImage));
+  scene->setSceneRect(pixmapItem->boundingRect());
+  view->fitInView(scene->sceneRect(), Qt::KeepAspectRatio);
+
+  cancelCropMode();
+  isUnsaved = true;
+  exifTextEdit->setText("Rotated image (Unsaved).");
+}
+
+void Sura::rotateRight()
+{
+  if (!pixmapItem || currentImage.isNull())
+    return;
+
+  QTransform transform;
+  transform.rotate(90);
+  currentImage = currentImage.transformed(transform, Qt::SmoothTransformation);
+
+  pixmapItem->setPixmap(QPixmap::fromImage(currentImage));
+  scene->setSceneRect(pixmapItem->boundingRect());
+  view->fitInView(scene->sceneRect(), Qt::KeepAspectRatio);
+
+  cancelCropMode();
+  isUnsaved = true;
+  exifTextEdit->setText("Rotated image (Unsaved).");
+}
+
 void Sura::toggleExif() { exifDock->setVisible(!exifDock->isVisible()); }
 
 void Sura::loadExif(const QString& fileName)
@@ -391,8 +435,7 @@ void Sura::loadExif(const QString& fileName)
       if (!showRawExif) {
         if (
           keyName == "MakerNote" || keyName == "UserComment" || value.length() > 60
-          || keyName.find("Offset") != std::string::npos
-          || keyName.find("ByteCount") != std::string::npos
+          || keyName.find("Offset") != std::string::npos || keyName.find("ByteCount") != std::string::npos
         )
           continue;
       }
