@@ -2,7 +2,7 @@
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Platform](https://img.shields.io/badge/platform-Linux-brightgreen.svg)
-![Sura Version](https://img.shields.io/badge/Version-3.0.0-purple.svg)
+![Sura Version](https://img.shields.io/badge/Version-0.0.1-purple.svg)
 [![Build Status](https://github.com/RiiK26/Sura/actions/workflows/build.yml/badge.svg)](https://github.com/RiiK26/Sura/actions)
 
 Sura is a sleek, modern, and lightweight image viewer built for Linux (supporting both X11 and Wayland) using Qt 6. It features EXIF data inspection, smart-edge cropping, automatic Dark/Light mode detection, and a minimalist interface.
