@@ -66,10 +66,17 @@ jobs:
           rm -rf AppDir/usr/plugins/tls
           rm -rf AppDir/usr/plugins/virtualkeyboard
           rm -rf AppDir/usr/plugins/generic
+          rm -f AppDir/usr/plugins/imageformats/libqgif.so
+          rm -f AppDir/usr/plugins/imageformats/libqico.so
+          rm -f AppDir/usr/plugins/imageformats/libqpdf.so
+          rm -f AppDir/usr/plugins/imageformats/libqwebp.so
 
           # Aggressive stripping of all shared libraries
           echo "Stripping shared libraries..."
           find AppDir -type f \( -name "*.so*" -o -name "sura" \) -exec strip --strip-unneeded {} \; 2>/dev/null || true
+
+          # Extreme squashfs compression
+          export APPIMAGE_MKSQUASHFS_ARGS="-comp xz -Xdict-size 100% -b 1M"
 
           # Create final AppImage
           ./linuxdeploy-x86_64.AppImage \
